@@ -14,7 +14,7 @@ resource "azurerm_resource_group" "rg01" {
 }
 
 resource "azurerm_storage_account" "stor01" {
-    name                = join("", lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", "")), "stor")
+    name                = lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", ""), "stor")
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
