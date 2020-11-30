@@ -14,7 +14,7 @@ resource "azurerm_resource_group" "rg01" {
 }
 
 resource "azurerm_storage_account" "stor01" {
-    name                = "${lower(replace(var.cluster_name, /[^0-9A-Za-z]/, ''))}stor"
+    name                = join("", lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", "")), "stor")
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
@@ -23,7 +23,7 @@ resource "azurerm_storage_account" "stor01" {
 }
 
 resource "azurerm_storage_container" "container01" {
-    name                    = lower(replace(var.cluster_name, /[^0-9A-Za-z]/, ''))
+    name                    = lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", ""))
     storage_account_name    = azurerm_storage_account.stor01.name
     container_access_type   = var.container_access
 }
@@ -33,7 +33,7 @@ resource "azurerm_kubernetes_cluster" "aks01" {
     name                = var.cluster_name
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
-    dns_prefix          = lower(replace(var.cluster_name, /[^0-9A-Za-z]/, ''))
+    dns_prefix          = lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", ""))
 
     default_node_pool {
         name        = "default"
@@ -47,7 +47,7 @@ resource "azurerm_kubernetes_cluster" "aks01" {
 }
 
 resource "azurerm_key_vault" "kv01" {
-    name                = "${lower(replace(var.cluster_name, /[^0-9A-Za-z]/, ''))}kv"
+    name                = join("", lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", "")), "kv")
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
