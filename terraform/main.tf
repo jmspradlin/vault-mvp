@@ -14,7 +14,7 @@ resource "azurerm_resource_group" "rg01" {
 }
 
 resource "azurerm_storage_account" "stor01" {
-    name                = lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", ""), "stor")
+    name                = lower(replace("${var.cluster_name}stor", "/[^0-9A-Za-z]/", ""))
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
@@ -23,7 +23,7 @@ resource "azurerm_storage_account" "stor01" {
 }
 
 resource "azurerm_storage_container" "container01" {
-    name                    = lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", ""))
+    name                    = lower(replace("${var.cluster_name}", "/[^0-9A-Za-z]/", ""))
     storage_account_name    = azurerm_storage_account.stor01.name
     container_access_type   = var.container_access
 }
@@ -33,7 +33,7 @@ resource "azurerm_kubernetes_cluster" "aks01" {
     name                = var.cluster_name
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
-    dns_prefix          = lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", ""))
+    dns_prefix          = lower(replace("${var.cluster_name}", "/[^0-9A-Za-z]/", ""))
 
     default_node_pool {
         name        = "default"
@@ -47,47 +47,24 @@ resource "azurerm_kubernetes_cluster" "aks01" {
 }
 
 resource "azurerm_key_vault" "kv01" {
-    name                = join("", lower(replace("${var.cluster_name}", "/^0-9A-Za-z/", "")), "kv")
+    name                = lower(replace("${var.cluster_name}kv", "/[^0-9A-Za-z]/", ""))
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
-    enabled_for_disk_encryption = true
+    sku_name            = var.kv_sku_name
+
+    enabled_for_disk_encryption = var.kv_disk_encrypt
     tenant_id                   = data.azurerm_client_config.current.tenant_id
-    soft_delete_enabled         = true
-    soft_delete_retention_days  = 7
-    purge_protection_enabled    = false
+    soft_delete_enabled         = var.kv_soft_delete
+    soft_delete_retention_days  = var.kv_delete_retention_days
 
     access_policy {
         tenant_id = data.azurerm_client_config.current.tenant_id
         object_id = data.azurerm_client_config.current.object_id
 
-        key_permissions = [
-            "create",
-            "decrypt",
-            "delete",
-            "get",
-            "list",
-            "ManageContacts",
-            "update",
-        ]
-
-        secret_permissions = [
-            "delete",
-            "get",
-            "list",
-            "purge",
-            "recover",
-            "restore",
-            "set",
-        ]
-
-        storage_permissions = [
-            "delete",
-            "get",
-            "list",
-            "set",
-            "update",
-        ]
+        key_permissions     = var.kv_key_perms
+        secret_permissions  = var.kv_secret_perms
+        storage_permissions = var.kv_storage_perms
     }
 }
 
