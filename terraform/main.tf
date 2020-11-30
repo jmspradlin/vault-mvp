@@ -4,6 +4,7 @@ provider "azurerm" {
             purge_soft_delete_on_destroy = true
         }
     }
+    version = "~>2.28.0"
 }
 
 data "azurerm_client_config" "current" {}

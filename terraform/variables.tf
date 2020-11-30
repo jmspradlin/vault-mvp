@@ -67,7 +67,7 @@ variable "kv_soft_delete" {
 
 variable "kv_delete_retention_days" {
     type        = number
-    default     = 7
+    default
     description = "(optional) describe your variable"
 }
 
