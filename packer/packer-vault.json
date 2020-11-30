@@ -1,0 +1,47 @@
+{
+    "variables": {
+        "client-id": "",
+        "client-secret": "",
+        "tenant-id": "",
+        "subscription-id": "",
+        "managed-image-name": ""
+    },
+
+    "sensitive-variables": ["client-id", "client-secret", "tenant-id", "subscription-id"],
+
+    "builders": [{
+        "type": "azure-arm",
+        "client_id": "{{user `client-id`}}",
+        "client_secret": "{{user `client-secret`}}",
+        "tenant_id": "{{user `tenant-id`}}",
+        "subscription_id": "{{user `subscription-id`}}",
+
+        "managed_image_resource_group_name": "template-rg01",
+        "managed_image_name": "{{user `managed-image-name`}}",
+
+        "os_type": "Linux",
+        "image_publisher": "Canonical",
+        "image_offer": "UbuntuServer",
+        "image_sku": "16.04-LTS",
+
+        "azure_tags": {
+            "dept": "Engineering",
+            "task": "Image deployment"
+        },
+
+        "location": "eastus2",
+        "vm_size": "Standard_DS2_v2"
+    }],
+    "provisioners": [{
+        "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+        "inline": [
+            "apt-get update",
+            "apt-get upgrade -y",
+            "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash",
+            "git clone --branch master https://github.com/hashicorp/terraform-azurerm-vault.git",
+            "terraform-azurerm-vault/modules/install-vault/install-vault --version 0.7.0"
+        ],
+        "inline_shebang": "/bin/sh -x",
+        "type": "shell"
+    }]
+}
