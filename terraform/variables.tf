@@ -109,3 +109,19 @@ variable "kv_storage_perms" {
     ]
     description = "Permissions for the Key Vault Storage"
 }
+
+variable "kv_certificate_permissions" {
+    type        = list(string)
+    default     = [
+        "create",
+        "delete",
+        "get",
+        "import",
+        "list",
+        "purge",
+        "recover",
+        "restore",
+        "update",
+    ]
+    description = "Permissions for the Key Vault Storage"
+}

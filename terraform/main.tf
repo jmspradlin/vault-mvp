@@ -63,17 +63,33 @@ resource "azurerm_key_vault" "kv01" {
         tenant_id = data.azurerm_client_config.current.tenant_id
         object_id = data.azurerm_client_config.current.object_id
 
-        key_permissions     = var.kv_key_perms
-        secret_permissions  = var.kv_secret_perms
-        storage_permissions = var.kv_storage_perms
+        key_permissions         = var.kv_key_perms
+        secret_permissions      = var.kv_secret_perms
+        storage_permissions     = var.kv_storage_perms
+        certificate_permissions = var.kv_certificate_permissions
     }
 }
 
-
-output "client_cert" {
-    value = azurerm_kubernetes_cluster.aks01.kube_config.0.client_certificate
+resource "azurerm_key_vault_secret" "aks_client_cert" {
+    name            = var.cluster_name
+    value           = azurerm_kubernetes_cluster.aks01.kube_config.0.client_certificate
+    key_vault_id    = azurerm_key_vault.kv01.id
 }
 
-output "kube_config" {
-    value = azurerm_kubernetes_cluster.aks01.kube_config_raw
+
+
+resource "azurerm_key_vault_secret" "kube_config" {
+    name    = "${var.cluster_name}kubeconfig"
+    value   = azurerm_kubernetes_cluster.aks01.kube_config_raw
+
+    key_vault_id    = azurerm_key_vault.kv01.id
 }
+
+
+# output "client_cert" {
+#     value = azurerm_kubernetes_cluster.aks01.kube_config.0.client_certificate
+# }
+
+# output "kube_config" {
+#     value = azurerm_kubernetes_cluster.aks01.kube_config_raw
+# }
