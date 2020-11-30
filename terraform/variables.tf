@@ -28,7 +28,7 @@ variable "container_access" {
 }
 
 variable "cluster_name" {
-    type = string
+    type        = string
     description = "Name of the AKS clusted to be created."
 }
 
