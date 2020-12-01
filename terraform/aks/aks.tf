@@ -8,7 +8,7 @@ data "azurerm_resource_group" "rg01" {
 }
 
 data "azurerm_key_vault" "kv01" {
-    name                = lower(replace("${var.cluster_name}kv", "/[^0-9A-Za-z]/", ""))
+    name                = lower(replace("${var.rg_name}kv", "/[^0-9A-Za-z]/", ""))
     resource_group_name = data.azurerm_resource_group.rg01.name
 }
 
