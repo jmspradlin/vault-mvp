@@ -13,4 +13,5 @@ terraform {
   }
 ```
 replacing "`STORAGE-ACCOUNT-NAME`" with the storage account created from the terraform state directory.
-IMPORTANT: DO NOT COMMIT THIS FILE
+
+**IMPORTANT: Do not commit the `backend.tf` file**

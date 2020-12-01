@@ -2,19 +2,27 @@ provider "azurerm" {
     features {}
     version = "~>2.28.0"
 }
+
 # Data calls
 data "azurerm_resource_group" "rg01" {
     name        = var.rg_name
 }
+
 data "azurerm_key_vault" "kv01" {
     name                = lower(replace("${var.rg_name}kv", "/[^0-9A-Za-z]/", ""))
     resource_group_name = data.azurerm_resource_group.rg01.name
 }
+
 data "azurerm_storage_account" "stor01" {
-    name                    = lower(replace("${var.rg_name}", "/[^0-9A-Za-z]/", ""))
-    storage_account_name    = lower(replace("${var.rg_name}stor", "/[^0-9A-Za-z]/", ""))
+    name                = lower(replace("${var.rg_name}stor", "/[^0-9A-Za-z]/", ""))
     resource_group_name = data.azurerm_resource_group.rg01.name
 }
+
+data "azurerm_image" "vault" {
+  name                = var.image_name
+  resource_group_name = var.image_rg
+}
+
 
 # Resources
 # Random ids for admin creation
@@ -48,12 +56,14 @@ resource "azurerm_virtual_network" "vnet01" {
   location            = data.azurerm_resource_group.rg01.location
   resource_group_name = data.azurerm_resource_group.rg01.name
 }
+
 resource "azurerm_subnet" "sn01" {
     name                    = "${azurerm_virtual_network.vnet01.name}-internal01"
     resource_group_name     = data.azurerm_resource_group.rg01.name
     virtual_network_name    = azurerm_virtual_network.vnet01.name
     address_prefixes        = azurerm_virtual_network.vnet01.address_space # Subnet uses the full address space for the vnet
 }
+
 resource "azurerm_network_interface" "vm_nic01" {
     name                = "${var.vm01_name}-nic01"
     location            = data.azurerm_resource_group.rg01.location
@@ -89,14 +99,15 @@ resource "azurerm_linux_virtual_machine" "vm01" {
     os_disk {
         caching                 = "ReadWrite"
         storage_account_type    = "Standard_LRS"
+        name                    = "${var.vm01_name}-osdisk"
     }
     
-    source_image_id = var.source_image_id
+    source_image_id = data.azurerm_image.vault.id
 }
 
 # Permissions allocation
 resource "azurerm_role_assignment" "StorageBlobDataContributor" {
-    scope                   = data.storage_account.stor01.id
+    scope                   = data.azurerm_storage_account.stor01.id
     role_definition_name    = "Storage Blob Data Contributor"
-    principal_id            = azurerm_linux_virtual_machine.vm01.identity.principal_id
+    principal_id            = azurerm_linux_virtual_machine.vm01.identity[0].principal_id
 }
