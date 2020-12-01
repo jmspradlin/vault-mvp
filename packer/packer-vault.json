@@ -30,16 +30,20 @@
         },
 
         "location": "eastus2",
-        "vm_size": "Standard_DS2_v2"
+        "vm_size": "Standard_D2s_v3"
     }],
     "provisioners": [{
         "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
         "inline": [
+            "sleep 30",
             "apt-get update",
             "apt-get upgrade -y",
             "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash",
-            "git clone --branch master https://github.com/hashicorp/terraform-azurerm-vault.git",
-            "terraform-azurerm-vault/modules/install-vault/install-vault --version 0.7.0"
+            "curl -L https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -o vault.zip",
+            "unzip vault.zip",
+            "sudo chown root:root vault",
+            "mv vault /usr/local/bin/",
+            "rm -f vault.zip"
         ],
         "inline_shebang": "/bin/sh -x",
         "type": "shell"
