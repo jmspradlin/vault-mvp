@@ -15,7 +15,7 @@ resource "azurerm_resource_group" "rg01" {
 }
 
 resource "azurerm_storage_account" "stor01" {
-    name                = lower(replace("${var.cluster_name}stor", "/[^0-9A-Za-z]/", ""))
+    name                = lower(replace("${var.rg_name}stor", "/[^0-9A-Za-z]/", ""))
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
@@ -24,31 +24,13 @@ resource "azurerm_storage_account" "stor01" {
 }
 
 resource "azurerm_storage_container" "container01" {
-    name                    = lower(replace("${var.cluster_name}", "/[^0-9A-Za-z]/", ""))
+    name                    = lower(replace("${var.rg_name}", "/[^0-9A-Za-z]/", ""))
     storage_account_name    = azurerm_storage_account.stor01.name
     container_access_type   = var.container_access
 }
 
-
-resource "azurerm_kubernetes_cluster" "aks01" {
-    name                = var.cluster_name
-    location            = azurerm_resource_group.rg01.location
-    resource_group_name = azurerm_resource_group.rg01.name
-    dns_prefix          = lower(replace("${var.cluster_name}", "/[^0-9A-Za-z]/", ""))
-
-    default_node_pool {
-        name        = "default"
-        node_count  = var.node_pool_count
-        vm_size     = var.node_pool_vm_size
-    }
-
-    identity {
-        type    = "SystemAssigned"
-    }
-}
-
 resource "azurerm_key_vault" "kv01" {
-    name                = lower(replace("${var.cluster_name}kv", "/[^0-9A-Za-z]/", ""))
+    name                = lower(replace("${var.rg_name}kv", "/[^0-9A-Za-z]/", ""))
     location            = azurerm_resource_group.rg01.location
     resource_group_name = azurerm_resource_group.rg01.name
 
@@ -69,22 +51,6 @@ resource "azurerm_key_vault" "kv01" {
         certificate_permissions = var.kv_certificate_permissions
     }
 }
-
-resource "azurerm_key_vault_secret" "aks_client_cert" {
-    name            = var.cluster_name
-    value           = azurerm_kubernetes_cluster.aks01.kube_config.0.client_certificate
-    key_vault_id    = azurerm_key_vault.kv01.id
-}
-
-
-
-resource "azurerm_key_vault_secret" "kube_config" {
-    name    = "${var.cluster_name}kubeconfig"
-    value   = azurerm_kubernetes_cluster.aks01.kube_config_raw
-
-    key_vault_id    = azurerm_key_vault.kv01.id
-}
-
 
 # output "client_cert" {
 #     value = azurerm_kubernetes_cluster.aks01.kube_config.0.client_certificate
