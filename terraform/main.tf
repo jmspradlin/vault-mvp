@@ -51,11 +51,3 @@ resource "azurerm_key_vault" "kv01" {
         certificate_permissions = var.kv_certificate_permissions
     }
 }
-
-# output "client_cert" {
-#     value = azurerm_kubernetes_cluster.aks01.kube_config.0.client_certificate
-# }
-
-# output "kube_config" {
-#     value = azurerm_kubernetes_cluster.aks01.kube_config_raw
-# }
