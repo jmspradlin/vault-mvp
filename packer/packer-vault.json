@@ -38,6 +38,7 @@
             "sleep 30",
             "apt-get update",
             "apt-get upgrade -y",
+            "apt install unzip",
             "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash",
             "curl -L https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -o vault.zip",
             "unzip vault.zip",
