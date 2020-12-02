@@ -23,6 +23,9 @@ data "azurerm_image" "vault" {
   resource_group_name = var.image_rg
 }
 
+data "http" "mypublicip" {
+  url = "http://ipv4.icanhazip.com"
+}
 
 # Resources
 # Random ids for admin creation
@@ -64,6 +67,24 @@ resource "azurerm_subnet" "sn01" {
     address_prefixes        = azurerm_virtual_network.vnet01.address_space # Subnet uses the full address space for the vnet
 }
 
+resource "azurerm_network_security_group" "nsg01" {
+    name                    = "nsg01"
+    resource_group_name     = data.azurerm_resource_group.rg01.name
+    location                = data.azurerm_resource_group.rg01.location
+
+    security_rule {
+        name                       = "Inbound"
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "*"
+        source_address_prefix      = "${chomp(data.http.mypublicip.body)}/32"
+        destination_address_prefix = "*"
+    }
+}
+
 resource "azurerm_network_interface" "vm_nic01" {
     name                = "${var.vm01_name}-nic01"
     location            = data.azurerm_resource_group.rg01.location
@@ -73,7 +94,15 @@ resource "azurerm_network_interface" "vm_nic01" {
         name                            = "internal"
         subnet_id                       = azurerm_subnet.sn01.id
         private_ip_address_allocation   = "Dynamic"
+        public_ip_address_id            = azurerm_public_ip.pubIp.id
     }
+}
+
+resource "azurerm_public_ip" "pubIp" {
+    name                = "${var.vm01_name}-pubIp01"
+    location            = data.azurerm_resource_group.rg01.location
+    resource_group_name = data.azurerm_resource_group.rg01.name
+    allocation_method   = "Dynamic"
 }
 
 # Virtual machine creation
